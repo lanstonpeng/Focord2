@@ -17,13 +17,14 @@ class PaperViewController: UIViewController ,UIViewControllerTransitioningDelega
     var animator: UIDynamicAnimator!
     
     //MARK: macro
-    let RECORD_CELL_WIDTH:CGFloat = 150
+    let RECORD_CELL_WIDTH:CGFloat = 120
     var interactSlideTransition:UIPercentDrivenInteractiveTransition?
     
     let CELL_FINAL_FRAME:CGRect
     //TODO:add page count support
     var pageCount = 5
     internal var currentIndex = 0
+    internal var recodeIndex = 0
     
     var hasNextRecord:Bool = true
     var verticalLine:CAShapeLayer?
@@ -83,6 +84,7 @@ class PaperViewController: UIViewController ,UIViewControllerTransitioningDelega
         self.view.addSubview(cell)
     }
     
+    //显示已记录cells
     func showPreviousRecordCell()
     {
         let recordData = DataManipulator.getAllRecords()
@@ -102,25 +104,13 @@ class PaperViewController: UIViewController ,UIViewControllerTransitioningDelega
                 
                 self.addVisualRecordCellOnBoard(cell)
                 idx++
+                recodeIndex = idx
             }
         }
         else
         {
             println("there's no today data")
         }
-        /*
-        recordData.enumerateObjectsUsingBlock { (record, idx, stop) -> Void in
-            
-            let f = CGRectMake( CGFloat(idx % 4) * (self.RECORD_CELL_WIDTH/2 + 10) + 10 , CGFloat(idx/4) * (self.RECORD_CELL_WIDTH/2 + 10) + 10, self.RECORD_CELL_WIDTH/2, self.RECORD_CELL_WIDTH/2)
-            
-            let cell = RecordCell(frame: f)
-            cell.duration = record.objectForKey("duration") as CGFloat
-            
-            let tapGes:UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: "handlePreviousRecordRellTap:")
-            cell.addGestureRecognizer(tapGes)
-            self.view.addSubview(cell)
-        }
-        */
     }
     
     override func viewDidLoad() {
@@ -625,6 +615,7 @@ class PaperViewController: UIViewController ,UIViewControllerTransitioningDelega
         
         self.copyRecordCell?.stopCounting()
         self.copyRecordCell?.totalCount += 1
+        self.copyRecordCell?.bigifyCircleByUnit()
     }
     
     func deviceDidFlipToFront() {
@@ -641,7 +632,7 @@ class PaperViewController: UIViewController ,UIViewControllerTransitioningDelega
         if self.copyRecordCell?.totalCount > 0
         {
             DataManipulator.addRecord(self.copyRecordCell!)
-            self.removeCurrentRecord()
+            self.moveToProperPlace(self.copyRecordCell!)
         }
         //未翻转，删除cell
         else
@@ -654,9 +645,33 @@ class PaperViewController: UIViewController ,UIViewControllerTransitioningDelega
         
     }
     
+    //放置拥有记录的cell
+    func moveToProperPlace(cell:GameCountingCircleView)
+    {
+        
+        let idx = recodeIndex + 1
+        let f = CGRectMake( CGFloat(idx % 4) * (self.RECORD_CELL_WIDTH/2 + 10) + 10 , CGFloat(idx/4) * (self.RECORD_CELL_WIDTH/2 + 10) + 20, self.RECORD_CELL_WIDTH/2, self.RECORD_CELL_WIDTH/2)
+        
+        cell.stopCounting()
+        UIView.animateWithDuration(2.3, animations: { () -> Void in
+            cell.frame = f;
+            }) { (completed:Bool) -> Void in
+            self.removeCurrentRecord()
+        }
+        //drop down
+    }
+    
     func removeCurrentRecord()
     {
-        self.copyRecordCell?.removeFromSuperview()
+        UIView.animateWithDuration(0.3, animations: { () -> Void in
+            self.copyRecordCell?.alpha = 0
+            self.copyRecordCell?.center.y += 30
+            }) { (completed:Bool) -> Void in
+                if completed
+                {
+                    self.copyRecordCell?.removeFromSuperview()
+                }
+        }
         self.copyRecordCell = nil
         motionManager?.stopListen()
     }

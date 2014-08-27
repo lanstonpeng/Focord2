@@ -159,6 +159,13 @@ class GameCountingCircleView: UIView,NSCopying {
         return c
     }
     
+    func bigifyCircleByUnit()
+    {
+        frontLayer.frame = CGRectInset(frontLayer.frame, -1, -1)
+        self.bounds = CGRectInset(self.bounds, -1, -1)
+        frontLayer.cornerRadius = frontLayer.frame.size.width / 2;
+        radius = frontLayer.frame.size.width/2 + 1
+    }
     func updateSector()
     {
         //pieCapacity += 360.0 / CGFloat(destinationCount / (1.0) / 30.0 )
