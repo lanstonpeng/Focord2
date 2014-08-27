@@ -46,7 +46,7 @@ class PaperViewController: UIViewController ,UIViewControllerTransitioningDelega
     var motionManager:MotionManager?
     
     
-    let WAITING_TIME:Int = 20
+    let WAITING_TIME:Int = 3
     required init(coder aDecoder: NSCoder)
     {
         
@@ -118,7 +118,7 @@ class PaperViewController: UIViewController ,UIViewControllerTransitioningDelega
         
         //copy plist file
         DataManipulator.initFile()
-        motionManager = MotionManager()
+        motionManager = MotionManager.instance
         motionManager?.delegate = self
         self.showPreviousRecordCell()
         self.createLine()
@@ -637,7 +637,8 @@ class PaperViewController: UIViewController ,UIViewControllerTransitioningDelega
         //未翻转，删除cell
         else
         {
-            self.removeCurrentRecord()
+            //self.removeCurrentRecord()
+            self.moveToProperPlace(self.copyRecordCell!)
         }
     }
     
@@ -653,12 +654,15 @@ class PaperViewController: UIViewController ,UIViewControllerTransitioningDelega
         let f = CGRectMake( CGFloat(idx % 4) * (self.RECORD_CELL_WIDTH/2 + 10) + 10 , CGFloat(idx/4) * (self.RECORD_CELL_WIDTH/2 + 10) + 20, self.RECORD_CELL_WIDTH/2, self.RECORD_CELL_WIDTH/2)
         
         cell.stopCounting()
+        /*
         UIView.animateWithDuration(2.3, animations: { () -> Void in
             cell.frame = f;
             }) { (completed:Bool) -> Void in
             self.removeCurrentRecord()
         }
+        */
         //drop down
+        cell.dropCicleView()
     }
     
     func removeCurrentRecord()

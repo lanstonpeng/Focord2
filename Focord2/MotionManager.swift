@@ -25,6 +25,13 @@ class MotionManager: NSObject {
     
     var motionManager:CMMotionManager
     
+    class var instance:MotionManager{
+        struct Singleton{
+            static let single = MotionManager()
+        }
+        return Singleton.single
+    }
+    
     override init()
     {
         motionManager = CMMotionManager()
@@ -64,17 +71,19 @@ class MotionManager: NSObject {
             }
             
             })
-        /*
+        
+    }
+    func startListenDeviceMotion(callback:(deviceMotion:CMDeviceMotion!,error:NSError!) -> Void)
+    {
         let deviceQueue:NSOperationQueue = NSOperationQueue()
         motionManager.startDeviceMotionUpdatesToQueue(deviceQueue, withHandler: {(motion:CMDeviceMotion! , error:NSError! ) -> Void in
             var transform = CATransform3DMakeRotation(CGFloat(motion.attitude.pitch), 1, 0, 0)
             
 			transform = CATransform3DRotate(transform, CGFloat(motion.attitude.roll), 0, 1, 0)
-            dispatch_async(dispatch_get_main_queue(), {() -> Void in
-                self.boundView!.layer.transform = transform
-                })
+//            dispatch_async(dispatch_get_main_queue(), {() -> Void in
+//                })
+            callback(deviceMotion: motion, error: error)
             })
-        */
     }
     func stopListen()
     {

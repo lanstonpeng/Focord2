@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreMotion
 
 
 protocol GameCountingCircleDelegate:NSObjectProtocol
@@ -60,6 +61,10 @@ class GameCountingCircleView: UIView,NSCopying {
     internal var f:CGRect!
     internal var addCountCurrentNumber:CGFloat
     
+    var animator:UIDynamicAnimator!
+    var gravity:UIGravityBehavior!
+    var collision:UICollisionBehavior!
+    
     var totalCount: Int {
         didSet {
             self.indicatorLabel?.text = "\(totalCount)"
@@ -103,6 +108,7 @@ class GameCountingCircleView: UIView,NSCopying {
         
         self.layer.addSublayer(frontLayer)
         self.layer.insertSublayer(circleLayer, below:frontLayer)
+        
     }
     
     required init(coder aDecoder: NSCoder) {
@@ -166,6 +172,25 @@ class GameCountingCircleView: UIView,NSCopying {
         frontLayer.cornerRadius = frontLayer.frame.size.width / 2;
         radius = frontLayer.frame.size.width/2 + 1
     }
+    
+    func dropCicleView()
+    {
+        if animator == nil
+        {
+            animator = UIDynamicAnimator(referenceView: self.superview)
+            collision = UICollisionBehavior(items: [self])
+            collision.translatesReferenceBoundsIntoBoundary = true
+            gravity = UIGravityBehavior(items: [self])
+            animator.addBehavior(collision)
+            
+            MotionManager.instance.startListenDeviceMotion({ (deviceMotion:CMDeviceMotion!, error:NSError!) -> Void in
+                let gravityVector:CMAcceleration = deviceMotion.gravity
+                self.gravity.gravityDirection = CGVectorMake(CGFloat(gravityVector.x), CGFloat(-gravityVector.y))
+            })
+        }
+        animator.addBehavior(gravity)
+    }
+    
     func updateSector()
     {
         //pieCapacity += 360.0 / CGFloat(destinationCount / (1.0) / 30.0 )
@@ -202,4 +227,5 @@ class GameCountingCircleView: UIView,NSCopying {
         CGContextAddArc(context, startX, startY, radius, self.DEG2RAD(pieStart), self.DEG2RAD(pieStart + pieCapacity), clockWise);
         CGContextStrokePath(context);
     }
+    
 }
